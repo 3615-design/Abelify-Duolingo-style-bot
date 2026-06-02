@@ -139,125 +139,145 @@ We’ll make **Abelify as a Duolingo‑style quiz bot website** in this repo.
       <button class="danger" onclick="simulateMissedDay()">Simulate Missed Day</button>
     </div>
   </div>
+// -----------------------------
+// QUIZ QUESTIONS
+// -----------------------------
+const questions = [
+  {
+    q: "What is the capital of India?",
+    options: ["Mumbai", "Delhi", "Kolkata", "Chennai"],
+    answer: 1
+  },
+  {
+    q: "Which planet is known as the Red Planet?",
+    options: ["Earth", "Mars", "Jupiter", "Venus"],
+    answer: 1
+  },
+  {
+    q: "5 × 6 = ?",
+    options: ["11", "30", "56", "65"],
+    answer: 1
+  },
+  {
+    q: "Water freezes at ___ °C.",
+    options: ["0", "10", "50", "100"],
+    answer: 0
+  },
+  {
+    q: "Which gas do plants release during photosynthesis?",
+    options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Helium"],
+    answer: 0
+  }
+];
 
-  <script>
-    let streak = 0;
-    let gems = 1000;
-    let energy = 30;
-    let freezes = 3;
-    let xp = 0;
-    let lessonsToday = 0;
-    let lastPracticeDate = null;
+let qIndex = 0;
 
-    function todayStr() {
-      return new Date().toDateString();
-    }
+// -----------------------------
+// GAME VARIABLES
+// -----------------------------
+let streak = 0;
+let gems = 1000;
+let energy = 30;
+let freezes = 3;
+let xp = 0;
+let lastPracticeDate = null;
 
-    function log(msg) {
-      const box = document.getElementById('log');
-      box.innerHTML += msg + '<br>';
-      box.scrollTop = box.scrollHeight;
-    }
+function todayStr() {
+  return new Date().toDateString();
+}
 
-    function updateUI() {
-      document.getElementById('streak').textContent = '🔥 Streak: ' + streak;
-      document.getElementById('gems').textContent = '💎 Gems: ' + gems;
-      document.getElementById('energy').textContent = '⚡ Energy: ' + energy;
-      document.getElementById('freezes').textContent = '🧊 Streak Freezes: ' + freezes;
-      document.getElementById('xp').textContent = '⭐ XP: ' + xp;
-    }
+function log(msg) {
+  const box = document.getElementById('log');
+  box.innerHTML += msg + '<br>';
+  box.scrollTop = box.scrollHeight;
+}
 
-    function ensureDate() {
-      const today = todayStr();
-      if (!lastPracticeDate) {
-        lastPracticeDate = today;
+function updateUI() {
+  document.getElementById('streak').textContent = '🔥 Streak: ' + streak;
+  document.getElementById('gems').textContent = '💎 Gems: ' + gems;
+  document.getElementById('energy').textContent = '⚡ Energy: ' + energy;
+  document.getElementById('freezes').textContent = '🧊 Streak Freezes: ' + freezes;
+  document.getElementById('xp').textContent = '⭐ XP: ' + xp;
+}
+
+function ensureDate() {
+  const today = todayStr();
+  if (!lastPracticeDate) {
+    lastPracticeDate = today;
+    streak = 1;
+    log('First day! Streak started at 1.');
+  } else if (lastPracticeDate !== today) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = yesterday.toDateString();
+    if (lastPracticeDate === yStr) {
+      streak += 1;
+      log('New day, streak increased to ' + streak + '.');
+    } else {
+      if (freezes > 0) {
+        freezes -= 1;
+        log('Missed a day, but a freeze saved your streak.');
+      } else {
         streak = 1;
-        log('First day! Streak started at 1.');
-      } else if (lastPracticeDate !== today) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yStr = yesterday.toDateString();
-        if (lastPracticeDate === yStr) {
-          streak += 1;
-          log('New day, streak increased to ' + streak + '.');
-        } else {
-          if (freezes > 0) {
-            freezes -= 1;
-            log('You missed a day, but a streak freeze was used. Streak stays at ' + streak + '.');
-          } else {
-            streak = 1;
-            log('You missed too many days. Streak reset to 1.');
-          }
-        }
-        lastPracticeDate = today;
+        log('Streak reset to 1.');
       }
     }
+    lastPracticeDate = today;
+  }
+}
 
-    function completeLesson() {
-      if (energy < 2) {
-        log('Not enough energy to complete a lesson.');
-        return;
-      }
-      ensureDate();
-      energy -= 2;
-      xp += 10;
-      lessonsToday += 1;
-      log('Lesson completed! -2 energy, +10 XP.');
+// -----------------------------
+// QUIZ SYSTEM
+// -----------------------------
+function showQuestion() {
+  const q = questions[qIndex];
+  log("<b>Q" + (qIndex + 1) + ":</b> " + q.q);
 
-      if (lessonsToday % 5 === 0) {
-        energy += 5;
-        log('You completed 5 lessons in this unit! +5 bonus energy.');
-      }
+  q.options.forEach((opt, i) => {
+    log(`<button onclick="checkAnswer(${i})">${opt}</button>`);
+  });
+}
 
-      updateUI();
-    }
+function checkAnswer(choice) {
+  const q = questions[qIndex];
 
-    function buyStreakFreeze() {
-      if (gems < 230) {
-        log('Not enough gems to buy a streak freeze.');
-        return;
-      }
-      gems -= 230;
-      freezes += 1;
-      log('Bought 1 streak freeze for 230 gems.');
-      updateUI();
-    }
+  if (choice === q.answer) {
+    xp += 10;
+    log("<span style='color:green;'>Correct! +10 XP</span>");
+  } else {
+    log("<span style='color:red;'>Wrong answer.</span>");
+  }
 
-    function buyEnergy() {
-      if (gems < 600) {
-        log('Not enough gems to buy energy.');
-        return;
-      }
-      gems -= 600;
-      energy += 20;
-      log('Bought extra energy for 600 gems (+20 energy).');
-      updateUI();
-    }
+  qIndex++;
 
-    function buyTimerBoost() {
-      if (gems < 450) {
-        log('Not enough gems to buy a timer boost.');
-        return;
-      }
-      gems -= 450;
-      log('Bought a timer boost for 450 gems (placeholder effect).');
-      updateUI();
-    }
+  if (qIndex >= questions.length) {
+    log("<b>🎉 Unit Complete! +5 Energy</b>");
+    energy += 5;
+    qIndex = 0; // restart
+  }
 
-    function simulateMissedDay() {
-      if (!lastPracticeDate) {
-        log('You have not started a streak yet.');
-        return;
-      }
-      const d = new Date(lastPracticeDate);
-      d.setDate(d.getDate() - 2);
-      lastPracticeDate = d.toDateString();
-      log('Simulated missing more than one day. Complete a lesson to see streak behavior.');
-      updateUI();
-    }
+  updateUI();
+  setTimeout(showQuestion, 800);
+}
 
-    updateUI();
-    log('Welcome to Abelify! Start by completing a lesson.');
+// -----------------------------
+// START QUIZ
+// -----------------------------
+function startQuiz() {
+  if (energy < 2) {
+    log("Not enough energy to start a lesson.");
+    return;
+  }
+  ensureDate();
+  energy -= 2;
+  updateUI();
+  showQuestion();
+}
+
+updateUI();
+log("Welcome to Abelify! Press 'Start Lesson' to begin.");
+  <script>
+ 
   </script>
 </body>
 </html>
