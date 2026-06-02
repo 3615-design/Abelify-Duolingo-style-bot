@@ -1,2 +1,3 @@
 # Abelify-Duolingo-style-bot
 Abelify is a Duolingo‑style |SUPER ADVANCED| QuizBot that uses streaks, gems, energy, and leaderboards to make learning engaging. Users earn streaks by practicing daily, spend gems on boosts, manage energy for lessons, and compete through XP and streak rankings. The system rewards consistency and builds strong learning habits.
+Abelify is a gamified, Duolingo‑style QuizBot designed to make learning fun, consistent, and rewarding. It uses streaks, gems, energy, leaderboards, and lesson progression to motivate users to practice daily and build long‑term learning habits.
